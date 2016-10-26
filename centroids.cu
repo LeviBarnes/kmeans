@@ -22,9 +22,9 @@ limitations under the License.
 
 #include "labels.h"
 
-__device__ double atomicAddWrap(double* address, double val)
+#if (__CUDACC_VER_MAJOR__ < 8) || (defined(__CUDA_ARCH__) && (__CUDA_ARCH__ < 600))
+__device__ double atomicAdd(double* address, double val)
 {
-#if __CUDA_ARCH__ < 600
     unsigned long long int* address_as_ull =
                              (unsigned long long int*)address;
     unsigned long long int old = *address_as_ull, assumed;
@@ -35,10 +35,8 @@ __device__ double atomicAddWrap(double* address, double val)
                                              __longlong_as_double(assumed)));
     } while (assumed != old);
     return __longlong_as_double(old);
-#else
-    return atomicAdd(address, val);
-#endif
 }
+#endif
 
 namespace kmeans {
 namespace detail {
@@ -49,7 +47,7 @@ __device__ __forceinline__ void update_centroid(int label, int dimension,
                                                 int count, int* counts) {
     int index = label * d + dimension;
     double* target = centroids + index;
-    atomicAddWrap(target, accumulator);
+    atomicAdd(target, accumulator);
     if (dimension == 0) {
         atomicAdd(counts + label, count);
     }             

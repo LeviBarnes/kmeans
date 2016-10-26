@@ -1,4 +1,4 @@
-CUDA_ARCH ?= sm_35
+CUDA_ARCH ?= sm_60
 CUB_HOME ?= /home/lbarnes/main/CUB/cub-1.0.2/
 
 test: test.cu centroids.o labels.o kmeans.o timer.o
